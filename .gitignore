@@ -1,0 +1,123 @@
+build/
+
+# editors
+*.swp
+*~
+
+# Zephyr
+*.o
+*.a
+*.d
+*.cmd
+*.log
+*.pyc
+*.swp
+*.swo
+*~
+.\#*
+\#*\#
+build*/
+!doc/build/
+!scripts/build
+!tests/drivers/build_all
+!scripts/pylib/build_helpers
+cscope.*
+.dir
+
+/*.patch
+
+# The .cache directory will be used to cache toolchain capabilities if
+# no suitable out-of-tree directory is found.
+.cache
+
+outdir
+outdir-*
+scripts/basic/fixdep
+scripts/gen_idt/gen_idt
+doc/_build
+doc/doxygen
+doc/xml
+doc/html
+doc/boards
+doc/samples
+doc/latex
+doc/themes/zephyr-docs-theme
+sanity-out*
+twister-out*
+bsim_out
+bsim_bt_out
+tests/RunResults.xml
+scripts/grub
+doc/reference/kconfig/*.rst
+doc/doc.warnings
+.*project
+.settings
+.envrc
+hide-defaults-note
+.DS_Store
+.clangd
+
+# CI output
+compliance.xml
+_error.types
+
+# Tag files
+GPATH
+GRTAGS
+GTAGS
+TAGS
+tags
+
+.idea
+
+# from check_compliance.py
+BinaryFiles.txt
+Checkpatch.txt
+DevicetreeBindings.txt
+Gitlint.txt
+Identity.txt
+ImageSize.txt
+Kconfig.txt
+KconfigBasic.txt
+KconfigBasicNoModules.txt
+MaintainersFormat.txt
+Nits.txt
+Pylint.txt
+YAMLLint.txt
+
+### Start VisualStudioCode ###
+**/.vscode/*
+!**/.vscode/README.md
+!**/.vscode/*.default.json
+!**/.vscode/*.default.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
+### End VisualStudioCode ###
+
+### Start Python ###
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+__pycache__/
+### End Python ###
+
+##
+## Specific unignored files are placed at the end because it seems git parses
+## .gitignore linearly and will unignore specific files (i.e. a ".o" object file
+## in a release/ directory) as long as that is last.
+##

@@ -1,0 +1,222 @@
+/* TERPSICHORE OVERLAY */
+
+#include <dt-bindings/clock/stm32f4_clock.h>
+
+/{
+    zephyr,user {
+        io-channels         =  <&adc1 0>, <&adc1 1>, <&adc1 2>, <&adc1 3>, <&adc1 4>;
+        gpio-ext-css-gpios  =  <&gpioc 3 GPIO_ACTIVE_HIGH>;
+    };
+};
+
+/**************************************** 
+ * Disable Nucleo pins for btn and led */
+
+&leds {
+    status = "disabled"; 
+};
+
+&user_button {
+    status = "disabled";
+};
+
+/**************************************/
+
+&clk_hse {
+	/delete-property/ hse-bypass;
+};
+
+&rcc {
+    clocks = <&pll>;
+    clock-frequency = <DT_FREQ_M(168)>;
+    ahb-prescaler = <1>;
+    apb1-prescaler = <4>; 
+    apb2-prescaler = <2>;
+};
+
+/* Highest possible values to get a precise 48MHz clock for the USB on PLLQ. 
+ * We could get the clock to 180MHz if we could derive the USB clock from the 
+ * PLLSAIP, but Zephyr doesn't yet support this. If we need these extra MHz 
+  * revisit this, for now probably ok. 
+  */
+&pll {
+    div-m = <8>;
+    mul-n = <336>;
+    div-p = <2>;
+    div-q = <7>;
+    clocks = <&clk_hse>;
+    status = "okay";
+};
+
+
+&adc1 {
+    pinctrl-0 = <&adc1_in0_pa0 
+                 &adc1_in1_pa1 
+                 &adc1_in2_pa2 
+                 &adc1_in3_pa3
+                 &adc1_in4_pa4>;  
+    pinctrl-names = "default";
+    st,adc-prescaler = <2>;
+    status = "okay";
+    #address-cells = <1>;
+	#size-cells = <0>;
+
+	channel@0 {
+		reg = <0>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+    channel@1 {
+        reg = <1>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+    channel@2 {
+        reg = <2>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+    channel@3 {
+        reg = <3>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+    channel@4 {
+        reg = <4>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+};
+
+
+&dac1 {
+    pinctrl-0 = <&dac_out1_pa4 &dac_out2_pa5>;  
+    pinctrl-names = "default";
+    status = "disabled";  
+};
+
+&can1 {
+    status = "disabled";
+};
+
+&can2 {
+    status = "disabled";
+};
+
+&spi1 {
+    // compatible = "st,stm32-spi";
+    status = "disabled"; 
+    cs-gpios = < &gpioc 4 GPIO_ACTIVE_LOW >;
+    pinctrl-0 = <&spi1_mosi_pa7 &spi1_miso_pa6 &spi1_sck_pa5>;
+    pinctrl-names = "default";
+    clock-frequency = <5625000>;
+    label = "SPI1";
+    spidev: spi-dev@0 {
+        compatible = "zephyr,spi-dev";
+        reg = <0>;
+    };
+};
+
+&spi2 {
+    status = "okay"; 
+    pinctrl-0 = <&spi2_mosi_pc1 &spi2_sck_pb10 &spi2_miso_pc2>;
+    pinctrl-names = "default";
+    clock-frequency = <5250000>; // 5.25 MHz
+    cs-gpios = <&gpioc 3 GPIO_ACTIVE_LOW>;
+    label = "SPI2";
+    dmas = <&dma1 4 0 0x20040 0x03>, <&dma1 3 0 0x20040 0x03>;
+    dma-names = "tx", "rx";
+    spi2_gpio: gpio@0 { // might need to replace second part with mcp23s17
+        label="mcp23s17";
+        compatible = "microchip,mcp23s17";
+        gpio-controller;
+        #gpio-cells = <2>;
+        spi-max-frequency = <800000>;
+        reg = <0>;
+        ngpios = <16>;
+        // spi-cpol;
+        // spi-cpha;
+    };
+};
+
+&i2c1 {
+    status = "disabled";
+    pinctrl-0 = <&i2c1_scl_pb8 &i2c1_sda_pb7>;
+    pinctrl-names = "default";
+};
+
+&i2c2 {
+    status = "disabled";
+};
+
+&i2c3 {
+    status = "disabled";
+};
+
+&dma1 {
+    compatible = "st,stm32-dma-v1";
+    status="okay";
+};
+
+
+&dma2 {
+    compatible = "st,stm32-dma-v1";
+    status="okay";
+};
+
+
+
+&usart1 {
+    compatible = "st,stm32-uart";
+    // dmas = <&dma2 2 2 0x400 0x03>, <&dma2 2 7 0x400 0x03>;
+    // dma-names = "tx";
+    // pinctrl-0 = <&usart3_tx_pc10>;
+    // pinctrl-names = "default";
+    // current-speed = <31250>;
+    status = "disabled"; 
+};
+
+
+
+&timers1 {
+    status = "disabled"; 
+    st,prescaler = <168>;
+    st,countermode = <0>;
+    compatible = "st,stm32-timers";
+    counter_timer1: counter {
+        compatible = "st,stm32-counter";
+        status = "disabled";
+    };
+};
+
+&timers2 {
+    status = "disabled";
+    st,prescaler = <1000>;
+    st,countermode = <0>;
+    compatible = "st,stm32-timers";
+    counter_timer2: counter {
+        compatible = "st,stm32-counter";
+        status = "okay";
+    };
+};
+
+&timers3 {
+    status = "disabled";
+    st,prescaler = <500>;
+    st,countermode = <0>;
+    compatible = "st,stm32-timers";
+    counter_timer3: counter {
+        compatible = "st,stm32-counter";
+        status = "disabled";
+    };
+};

@@ -1,0 +1,5 @@
+mainmenu "TERPSICHORE"
+
+# rsource ""
+
+source "Kconfig.zephyr"
