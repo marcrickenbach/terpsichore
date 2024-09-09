@@ -20,10 +20,10 @@ extern “C” {
 
 #include <zephyr/kernel.h>
 
-#include "led/instance.h"
-#include "led/instance_cfg.h"
-#include "led/listener.h"
-#include "led/listener_cfg.h"
+#include "terpsichore/leds/instance.h"
+#include "terpsichore/leds/instance_cfg.h"
+#include "terpsichore/leds/listener.h"
+#include "terpsichore/leds/listener_cfg.h"
 
 
 /* *****************************************************************************

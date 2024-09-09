@@ -8,15 +8,14 @@
  * Includes
  */
 
-#include "led.h"
+#include "leds.h"
 #include <zephyr/smf.h>
 #include <zephyr/kernel.h>
-#include <zephyr/drivers/adc.h>
 #include <zephyr/drivers/gpio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "led/private/sm_evt.h"
-#include "led/private/module_data.h"
+#include "terpsichore/leds/private/sm_evt.h"
+#include "terpsichore/leds/private/module_data.h"
 
 /* *****************************************************************************
  * Constants, Defines, and Macros
