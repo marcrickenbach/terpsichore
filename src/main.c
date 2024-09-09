@@ -3,14 +3,32 @@
  */
 
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/counter.h>
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
+#include <zephyr/drivers/clock_control/stm32_clock_control.h>
+#include <stm32f4xx.h>
+#include <stm32f4xx_ll_rcc.h>
 
 #include <assert.h>
 #include <string.h>
 
 #include "main.h"
 
+#include "io-ctrl/io_ctrl.h"
+
+#include "io-ctrl/adc/id.h"
+#include "io-ctrl/adc/private/sm_evt.h"
+
+#include "io-ctrl/dac/id.h"
+#include "io-ctrl/dac/private/sm_evt.h"
+
+#include "io-ctrl/gpio/id.h"
+#include "io-ctrl/gpio/private/sm_evt.h"
+
+#include "io-ctrl/i2c/id.h"
+#include "io-ctrl/i2c/private/sm_evt.h"
 
 /* *****************************************************************************
  * Debugging
@@ -25,21 +43,66 @@ LOG_MODULE_REGISTER(main);
 /* Error if took longer than this to initialize. */
 #define WAIT_MAX_MSECS_FOR_INITIALIZATION 50
 
+/* Enable Thread Defines. */
+
+#define CONFIG_FKMG_IO_CTRL_ADC_THREAD      1
+#define CONFIG_FKMG_IO_CTRL_DAC_THREAD      0
+#define CONFIG_FKMG_IO_CTRL_GPIO_THREAD     1
+#define CONFIG_FKMG_IO_CTRL_I2C_THREAD      1
+
 
 /* *****************************************************************************
  * Threads
  */
+/* FKMG IO CONTROL THREADS. */
 
-/* Declare threads, queues, and other data structures for pot instance. */
-// static struct k_thread pot_thread;
-// #define POT_THREAD_STACK_SZ_BYTES   1024
-// K_THREAD_STACK_DEFINE(pot_thread_stack, POT_THREAD_STACK_SZ_BYTES);
-// #define MAX_QUEUED_POT_SM_EVTS  20
-// #define POT_SM_QUEUE_ALIGNMENT  4
-// K_MSGQ_DEFINE(pot_sm_evt_q, sizeof(struct Pot_SM_Evt),
-//         MAX_QUEUED_POT_SM_EVTS, POT_SM_QUEUE_ALIGNMENT);
-// static struct Pot_Instance pot_inst;
+#if CONFIG_FKMG_IO_CTRL_ADC_THREAD
+    /* Declare threads, queues, and other data structures for fkmg io adc instance. */
+    static struct k_thread fkmg_io_ctrl_adc_thread;
+    #define FKMG_IO_CTRL_ADC_THREAD_STACK_SZ_BYTES   1024
+    K_THREAD_STACK_DEFINE(fkmg_io_ctrl_adc_thread_stack, FKMG_IO_CTRL_ADC_THREAD_STACK_SZ_BYTES);
+    #define MAX_QUEUED_FKMG_IO_CTRL_ADC_SM_EVTS  10
+    #define FKMG_IO_CTRL_ADC_SM_QUEUE_ALIGNMENT  4
+    K_MSGQ_DEFINE(fkmg_io_ctrl_adc_sm_evt_q, sizeof(struct FKMG_IO_CTRL_ADC_SM_Evt),
+            MAX_QUEUED_FKMG_IO_CTRL_ADC_SM_EVTS, FKMG_IO_CTRL_ADC_SM_QUEUE_ALIGNMENT);
+    static struct FKMG_IO_CTRL_ADC_Instance fkmg_io_ctrl_adc_inst;
+#endif 
 
+#if CONFIG_FKMG_IO_CTRL_DAC_THREAD
+    /* Declare threads, queues, and other data structures for fkmg io dac instance. */
+    static struct k_thread fkmg_io_ctrl_dac_thread;
+    #define FKMG_IO_CTRL_DAC_THREAD_STACK_SZ_BYTES   1024
+    K_THREAD_STACK_DEFINE(fkmg_io_ctrl_dac_thread_stack, FKMG_IO_CTRL_DAC_THREAD_STACK_SZ_BYTES);
+    #define MAX_QUEUED_FKMG_IO_CTRL_DAC_SM_EVTS  10
+    #define FKMG_IO_CTRL_DAC_SM_QUEUE_ALIGNMENT  4
+    K_MSGQ_DEFINE(fkmg_io_ctrl_dac_sm_evt_q, sizeof(struct FKMG_IO_CTRL_DAC_SM_Evt),
+            MAX_QUEUED_FKMG_IO_CTRL_DAC_SM_EVTS, FKMG_IO_CTRL_DAC_SM_QUEUE_ALIGNMENT);
+    static struct FKMG_IO_CTRL_DAC_Instance fkmg_io_ctrl_dac_inst;
+#endif
+
+#if CONFIG_FKMG_IO_CTRL_GPIO_THREAD
+    /* Declare threads, queues, and other data structures for fkmg io gpio instance. */
+    static struct k_thread fkmg_io_ctrl_gpio_thread;
+    #define FKMG_IO_CTRL_GPIO_THREAD_STACK_SZ_BYTES   1024
+    K_THREAD_STACK_DEFINE(fkmg_io_ctrl_gpio_thread_stack, FKMG_IO_CTRL_GPIO_THREAD_STACK_SZ_BYTES);
+    #define MAX_QUEUED_FKMG_IO_CTRL_GPIO_SM_EVTS  10
+    #define FKMG_IO_CTRL_GPIO_SM_QUEUE_ALIGNMENT  4
+    K_MSGQ_DEFINE(fkmg_io_ctrl_gpio_sm_evt_q, sizeof(struct FKMG_IO_CTRL_GPIO_SM_Evt),
+            MAX_QUEUED_FKMG_IO_CTRL_GPIO_SM_EVTS, FKMG_IO_CTRL_GPIO_SM_QUEUE_ALIGNMENT);
+    static struct FKMG_IO_CTRL_GPIO_Instance fkmg_io_ctrl_gpio_inst;
+#endif
+
+#if CONFIG_FKMG_IO_CTRL_I2C_THREAD
+    /* Declare threads, queues, and other data structures for fkmg io i2c instance. */
+    static struct k_thread fkmg_io_ctrl_i2c_thread;
+    #define FKMG_IO_CTRL_I2C_THREAD_STACK_SZ_BYTES   1024
+    K_THREAD_STACK_DEFINE(fkmg_io_ctrl_i2c_thread_stack, FKMG_IO_CTRL_I2C_THREAD_STACK_SZ_BYTES);
+    #define MAX_QUEUED_FKMG_IO_CTRL_I2C_SM_EVTS  10
+    #define FKMG_IO_CTRL_I2C_SM_QUEUE_ALIGNMENT  4
+    K_MSGQ_DEFINE(fkmg_io_ctrl_i2c_sm_evt_q, sizeof(struct FKMG_IO_CTRL_I2C_SM_Evt),
+            MAX_QUEUED_FKMG_IO_CTRL_I2C_SM_EVTS, FKMG_IO_CTRL_I2C_SM_QUEUE_ALIGNMENT);
+    static struct FKMG_IO_CTRL_I2C_Instance fkmg_io_ctrl_i2c_inst;
+#endif
 
 /* *****************************************************************************
  * Listeners
@@ -69,18 +132,57 @@ K_EVENT_DEFINE(events);
 /* ********************
  * ON LISTENER INITS
  * ********************/
+static void on_fkmg_io_ctrl_adc_converted(struct FKMG_IO_CTRL_ADC_Evt *p_evt)
+{
+    assert(p_evt->sig == k_FKMG_IO_CTRL_ADC_Evt_Sig_Converted);
+    /* Broadcast to where-ever. */
+}
 
+static void on_fkmg_io_ctrl_gpio_interrupt(struct FKMG_IO_CTRL_GPIO_Evt *p_evt)
+{
+    assert(p_evt->sig == k_FKMG_IO_CTRL_GPIO_Evt_Sig_GPIO_Interrupt);
+    /* Broadcast to where-ever. */
+}
 
 /* ********************
  * ON INSTANCE INITS
  * ********************/
 
-// static void on_gpio_instance_initialized(struct GPIOEXT_Evt *p_evt)
-// {
-//     assert(p_evt->sig == k_GPIOEXT_Evt_Sig_Instance_Initialized);
-//     assert(p_evt->data.initd.p_inst == &gpioext_inst);
-//     k_event_post(&events, EVT_FLAG_INSTANCE_INITIALIZED);
-// }
+#if CONFIG_FKMG_IO_CTRL_ADC_THREAD
+    static void on_fkmg_io_ctrl_adc_instance_initialized(struct FKMG_IO_CTRL_ADC_Evt *p_evt)
+    {
+        assert(p_evt->sig == k_FKMG_IO_CTRL_ADC_Evt_Sig_Instance_Initialized);
+        assert(p_evt->data.initd.p_inst == &fkmg_io_ctrl_adc_inst);
+        k_event_post(&events, EVT_FLAG_INSTANCE_INITIALIZED);
+    }
+#endif
+
+#if CONFIG_FKMG_IO_CTRL_DAC_THREAD
+    static void on_fkmg_io_ctrl_dac_instance_initialized(struct FKMG_IO_CTRL_DAC_Evt *p_evt)
+    {
+        assert(p_evt->sig == k_FKMG_IO_CTRL_DAC_Evt_Sig_Instance_Initialized);
+        assert(p_evt->data.initd.p_inst == &fkmg_io_ctrl_dac_inst);
+        k_event_post(&events, EVT_FLAG_INSTANCE_INITIALIZED);
+    }
+#endif
+
+#if CONFIG_FKMG_IO_CTRL_GPIO_THREAD
+    static void on_fkmg_io_ctrl_gpio_instance_initialized(struct FKMG_IO_CTRL_GPIO_Evt *p_evt)
+    {
+        assert(p_evt->sig == k_FKMG_IO_CTRL_GPIO_Evt_Sig_Instance_Initialized);
+        assert(p_evt->data.initd.p_inst == &fkmg_io_ctrl_gpio_inst);
+        k_event_post(&events, EVT_FLAG_INSTANCE_INITIALIZED);
+    }
+#endif
+
+#if CONFIG_FKMG_IO_CTRL_I2C_THREAD
+    static void on_fkmg_io_ctrl_i2c_instance_initialized(struct FKMG_IO_CTRL_I2C_Evt *p_evt)
+    {
+        assert(p_evt->sig == k_FKMG_IO_CTRL_I2C_Evt_Sig_Instance_Initialized);
+        assert(p_evt->data.initd.p_inst == &fkmg_io_ctrl_i2c_inst);
+        k_event_post(&events, EVT_FLAG_INSTANCE_INITIALIZED);
+    }
+#endif
 
 /* ********************
  * WAIT ON INSTANCE INIT
@@ -100,26 +202,83 @@ static void wait_on_instance_initialized(void)
 
 int main (void) {
 
-    // /* Instance: Pot */
-    // struct Pot_Instance_Cfg pot_inst_cfg = {
-    //     .p_inst = &pot_inst,
-    //     .task.sm.p_thread = &pot_thread,
-    //     .task.sm.p_stack = pot_thread_stack,
-    //     .task.sm.stack_sz = K_THREAD_STACK_SIZEOF(pot_thread_stack),
-    //     .task.sm.prio = K_LOWEST_APPLICATION_THREAD_PRIO,
-    //     .msgq.p_sm_evts = &pot_sm_evt_q,
-    //     .cb = on_pot_instance_initialized,
-    // };
-    // Pot_Init_Instance(&pot_inst_cfg);
-    // wait_on_instance_initialized();
+/* FKMG I/O Control Driver Initialization*/
 
-    // static struct Pot_Listener pot_changed_lsnr;
-    // struct Pot_Listener_Cfg pot_lsnr_cfg = {
-    //     .p_inst = &pot_inst,
-    //     .p_lsnr = &pot_changed_lsnr, 
-    //     .sig     = k_Pot_Evt_Sig_Changed,
-    //     .cb      = on_pot_changed
-    // };
-    // Pot_Add_Listener(&pot_lsnr_cfg);
+#if CONFIG_FKMG_IO_CTRL_ADC_THREAD
+/* Instance: ADC */
+    struct FKMG_IO_CTRL_ADC_Instance_Cfg fkmg_io_ctrl_adc_inst_cfg = {
+        .p_inst = &fkmg_io_ctrl_adc_inst,
+        .task.sm.p_thread = &fkmg_io_ctrl_adc_inst,
+        .task.sm.p_stack = fkmg_io_ctrl_adc_thread_stack,
+        .task.sm.stack_sz = K_THREAD_STACK_SIZEOF(fkmg_io_ctrl_adc_thread_stack),
+        .task.sm.prio = K_LOWEST_APPLICATION_THREAD_PRIO,
+        .msgq.p_sm_evts = &fkmg_io_ctrl_adc_sm_evt_q,
+        .cb = on_fkmg_io_ctrl_adc_instance_initialized,
+    };
+    FKMG_IO_CTRL_ADC_Init_Instance(&fkmg_io_ctrl_adc_inst_cfg);
+    wait_on_instance_initialized();
+
+    static struct FKMG_IO_CTRL_ADC_Listener fkmg_io_ctrl_adc_converted_lsnr;
+    struct FKMG_IO_CTRL_ADC_Listener_Cfg fkmg_io_ctrl_adc_lsnr_cfg = {
+        .p_inst = &fkmg_io_ctrl_adc_inst,
+        .p_lsnr = &fkmg_io_ctrl_adc_lsnr_cfg, 
+        .sig     = k_FKMG_IO_CTRL_ADC_Evt_Sig_Converted,
+        .cb      = on_fkmg_io_ctrl_adc_converted
+    };
+    FKMG_IO_CTRL_ADC_Add_Listener(&fkmg_io_ctrl_adc_lsnr_cfg);
+#endif
+
+#if CONFIG_FKMG_IO_CTRL_DAC_THREAD
+/* Instance: DAC */
+    struct FKMG_IO_CTRL_DAC_Instance_Cfg fkmg_io_ctrl_dac_inst_cfg = {
+        .p_inst = &fkmg_io_ctrl_dac_inst,
+        .task.sm.p_thread = &fkmg_io_ctrl_dac_inst,
+        .task.sm.p_stack = fkmg_io_ctrl_dac_thread_stack,
+        .task.sm.stack_sz = K_THREAD_STACK_SIZEOF(fkmg_io_ctrl_dac_thread_stack),
+        .task.sm.prio = K_LOWEST_APPLICATION_THREAD_PRIO,
+        .msgq.p_sm_evts = &fkmg_io_ctrl_dac_sm_evt_q,
+        .cb = on_fkmg_io_ctrl_dac_instance_initialized,
+    };
+    FKMG_IO_CTRL_DAC_Init_Instance(&fkmg_io_ctrl_dac_inst_cfg);
+    wait_on_instance_initialized();
+#endif
+
+#if CONFIG_FKMG_IO_CTRL_GPIO_THREAD
+/* Instance: GPIO */
+    struct FKMG_IO_CTRL_GPIO_Instance_Cfg fkmg_io_ctrl_gpio_inst_cfg = {
+        .p_inst = &fkmg_io_ctrl_gpio_inst,
+        .task.sm.p_thread = &fkmg_io_ctrl_gpio_inst,
+        .task.sm.p_stack = fkmg_io_ctrl_gpio_thread_stack,
+        .task.sm.stack_sz = K_THREAD_STACK_SIZEOF(fkmg_io_ctrl_gpio_thread_stack),
+        .task.sm.prio = K_LOWEST_APPLICATION_THREAD_PRIO,
+        .msgq.p_sm_evts = &fkmg_io_ctrl_gpio_sm_evt_q,
+        .cb = on_fkmg_io_ctrl_gpio_instance_initialized,
+    };
+    FKMG_IO_CTRL_GPIO_Init_Instance(&fkmg_io_ctrl_gpio_inst_cfg);
+    wait_on_instance_initialized();
+
+    static struct FKMG_IO_CTRL_GPIO_Listener fkmg_io_ctrl_gpio_lsnr;
+    struct FKMG_IO_CTRL_GPIO_Listener_Cfg fkmg_io_ctrl_gpio_lsnr_cfg = {
+        .p_inst = &fkmg_io_ctrl_gpio_inst,
+        .p_lsnr = &fkmg_io_ctrl_gpio_lsnr,
+        .sig     = k_FKMG_IO_CTRL_GPIO_Evt_Sig_GPIO_Interrupt,
+        .cb      = on_fkmg_io_ctrl_gpio_interrupt
+    };
+#endif
+
+#if CONFIG_FKMG_IO_CTRL_I2C_THREAD
+/* Instance: I2C */
+    struct FKMG_IO_CTRL_I2C_Instance_Cfg fkmg_io_ctrl_i2c_inst_cfg = {
+        .p_inst = &fkmg_io_ctrl_i2c_inst,
+        .task.sm.p_thread = &fkmg_io_ctrl_i2c_inst,
+        .task.sm.p_stack = fkmg_io_ctrl_i2c_thread_stack,
+        .task.sm.stack_sz = K_THREAD_STACK_SIZEOF(fkmg_io_ctrl_i2c_thread_stack),
+        .task.sm.prio = K_LOWEST_APPLICATION_THREAD_PRIO,
+        .msgq.p_sm_evts = &fkmg_io_ctrl_i2c_sm_evt_q,
+        .cb = on_fkmg_io_ctrl_i2c_instance_initialized,
+    };
+    FKMG_IO_CTRL_I2C_Init_Instance(&fkmg_io_ctrl_i2c_inst_cfg);
+    wait_on_instance_initialized();
+#endif
 
 };
