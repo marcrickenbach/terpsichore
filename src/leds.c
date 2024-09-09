@@ -11,7 +11,6 @@
 #include "leds.h"
 #include <zephyr/smf.h>
 #include <zephyr/kernel.h>
-#include <zephyr/drivers/gpio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include "terpsichore/leds/private/sm_evt.h"
@@ -24,7 +23,6 @@
 #define SUCCESS (0)
 #define FAIL    (-1)
 
-#define LED_PINS               DT_PATH(zephyr_user)
 #define MODE_BITS              5
 #define SUB_BITS               5
 #define MODE_MAX               (1 << MODE_BITS)
@@ -39,7 +37,7 @@
 #endif
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(led);
+LOG_MODULE_REGISTER(leds);
 
 /* *****************************************************************************
  * Structs
@@ -47,18 +45,6 @@ LOG_MODULE_REGISTER(led);
 
 static struct led_module_data led_md = {0};
 #define md led_md
-
-#if !defined(ARRAY_SIZE)
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-#endif
-
-#define DT_SPEC_AND_COMMA(node_id, prop, idx) \
-	GPIO_DT_SPEC_GET_BY_IDX(node_id, prop, idx),
-
-/** LED ARRAY */
-static const struct gpio_dt_spec led_pins[] = {
-    DT_FOREACH_PROP_ELEM(LED_PINS, led_gpios, DT_SPEC_AND_COMMA)
-};
 
 /* *****************************************************************************
  * Private
@@ -293,20 +279,6 @@ static void q_init_instance_event(struct LED_Instance_Cfg * p_cfg)
     q_sm_event(p_inst, &evt);
 }
 
-static int LED_Array_Init(struct LED_Instance *p_inst) 
-{
-    int ret = -1; 
-    for (int i = 0; i < ARRAY_SIZE(led_pins); i++) {
-        
-        if(!device_is_ready(led_pins[i].port)){
-            LOG_ERR("Device %s not ready\n", led_pins[i].port->name);
-            return ret;
-        }
-
-        gpio_pin_configure(led_pins[i].port, led_pins[i].pin, GPIO_OUTPUT | GPIO_PULL_DOWN);
-    }
-    return ret = 0; 
-}
 
 
 /* **********
@@ -348,8 +320,6 @@ static void state_init_run(void * o)
     config_instance_deferred(p_inst, &p_ii->cfg);
     broadcast_instance_initialized(p_inst, p_ii->cfg.cb);
 
-    LED_Array_Init(p_inst);
-
     smf_set_state(SMF_CTX(p_sm), &states[run]);
 }
 
@@ -380,22 +350,27 @@ static void state_run_run(void * o)
             
             struct LED_SM_Evt_Sig_Write * p_convert = &p_evt->data.write;
 
-            /* Write the value to the LED. */
-            if (p_convert->row == Mode) {
+            /* Write the value to the LED row. Since we're dealing with
+             * five leds per row, and once in a mode we'll only be dealing
+             * with one or the other, there are split into two groups and
+             * we queue all led writes.*/
+            
+            if (p_convert->row == k_LED_Id_Min) {
 
-                for (int i = 0; i < MODE_BITS; i++) 
+                for (int i = 0; i < k_LED_Id_Cnt - MODE_BITS; i++) 
                 {
                     bool state = (p_convert->val >> i) & 1;
-                    gpio_pin_set(led_pins[i].port, led_pins[i].pin, state);
+                    FKMG_IO_CTRL_GPIO_Write_State(p_inst->id, i, state);
                 }
 
             } else {
-                for (int k = SUB_BITS; k < ARRAY_SIZE(led_pins); k++) 
+                for (int k = SUB_BITS; k < k_LED_Id_Cnt; k++) 
                 {
                     bool state = (p_convert->val >> k) & 1;
-                    gpio_pin_set(led_pins[k].port, led_pins[k].pin, state);
+                    FKMG_IO_CTRL_GPIO_Write_State(p_inst->id, k, state);
                 }
             }
+            
             break;
     }
 }
@@ -490,6 +465,7 @@ void LED_Write_Modes(struct LED_Instance * p_inst, enum LED_Id row, uint8_t val)
             .data.write.row = row,
             .data.write.val = val
     };
+
     q_sm_event(p_inst, &evt);
 }
 

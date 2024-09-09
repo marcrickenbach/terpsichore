@@ -24,8 +24,17 @@ enum LED_Id{
     k_LED_Id_Min = k_LED_Id_Beg,    // Inclusive
     k_LED_Id_1st = k_LED_Id_Beg,    // Inclusive
 
-    Mode = k_LED_Id_Beg,
-    Sub,
+    MODE_LED_1 = k_LED_Id_Beg,
+    MODE_LED_2,
+    MODE_LED_3,
+    MODE_LED_4,
+    MODE_LED_5,
+
+    MODE_SUB_LED_1,
+    MODE_SUB_LED_2,
+    MODE_SUB_LED_3,
+    MODE_SUB_LED_4,
+    MODE_SUB_LED_5,
 
     k_LED_Id_End,                   // Exclusive
     k_LED_Id_Max = k_LED_Id_End - 1,// Inclusive
