@@ -1,0 +1,18 @@
+manifest:
+  version: 0.7
+  projects:
+    - name: zephyr
+      path: zephyr
+      revision: main
+    - name: hal_stm32
+      path: modules/hal/stm32
+      revision: main
+
+  self:
+    path: Terpsichore
+
+  west:
+    # Add additional Zephyr modules.
+    extra_modules:
+      - boards
+

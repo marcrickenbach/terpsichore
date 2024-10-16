@@ -1,5 +1,14 @@
 mainmenu "TERPSICHORE"
 
-# rsource ""
+config TERPSICHORE_STM32
+  default y
+  bool
+  select USE_STM32_HAL_I2C
+  select USE_STM32_HAL_ADC
 
 source "Kconfig.zephyr"
+
+config TERPSICHORE_STM32
+    bool "Enable STM32 LL for My Application"
+    default y
+    select USE_STM32_LL_I2C
