@@ -1,13 +1,13 @@
 /*******************************************************************************
- * @brief FKMG ADC Control interface.
+ * @brief FKMG DAC Control interface.
  *
- * This module is the public api to interface with the Zephyr ADC Driver.
+ * This module is the public api to interface with the Zephyr DAC Driver.
  *
  * @example
  */
 
-#ifndef FKMG_IO_CTRL_ADC_H
-#define FKMG_IO_CTRL_ADC_H
+#ifndef FKMG_IO_CTRL_DAC_H
+#define FKMG_IO_CTRL_DAC_H
 
 /* In case C++ needs to use anything here */
 #ifdef __cplusplus
@@ -43,15 +43,13 @@ extern “C” {
  * @param[in] p_cfg Pointer to the filled-in configuration struct. See the
  * struct for details.
  */
-void FKMG_IO_CTRL_ADC_Init_Instance(struct FKMG_IO_CTRL_ADC_Instance_Cfg * p_cfg);
+void FKMG_IO_CTRL_DAC_Init_Instance(struct FKMG_IO_CTRL_DAC_Instance_Cfg * p_cfg);
 
-void FKMG_IO_CTRL_ADC_Add_Listener(struct FKMG_IO_CTRL_ADC_Listener_Cfg * p_cfg);
+void FKMG_IO_CTRL_DAC_Add_Listener(struct FKMG_IO_CTRL_DAC_Listener_Cfg * p_cfg);
 
-uint16_t FKMG_IO_CTRL_ADC_Get_Value(struct FKMG_IO_CTRL_ADC_Instance * p_inst, 
-                                    enum   FKMG_IO_CTRL_ADC_Id id);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* FKMG_IO_CTRL_ADC_H */
+#endif /* FKMG_IO_CTRL_DAC_H */
