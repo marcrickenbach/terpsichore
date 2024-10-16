@@ -1,0 +1,70 @@
+Terpsichore Mode Overview
+
+
+1	Steps		0 0 0 0 1
+				Free Step
+				Lock Step
+				Saute
+				Glissade
+		
+2	Corpus		0 0 0 1 0
+				Internal LFO directly to CV
+
+3	Crossfade	0 0 0 1 1
+				All XY pairs independently crossfaded, 
+				one cv controls all in sync,
+				2, 3, 4, 8 channel morph 
+
+4	Seq Switch	0 0 1 0 0
+				Switches between input channels. 
+
+5	ASR			0 0 1 0 1
+				Analog Shift Register. 
+				CV input sampled at Ch1
+				Triggered at Ch2.
+
+6	LFO			0 0 1 1 0
+				Analog switches switch DACs to outputs
+				Pots Invert / phase shift outputs. 
+
+7	Gates		0 0 1 1 1
+				A gate array out of all outputs.
+				Sequencer output. 8 Channel outputs.
+				CV Inputs determine parameters of sequence.  
+
+8	Clock Div	0 1 0 0 0
+				Ch1 input is clock, 8 outputs of various divisions.
+				More parameters modified by channel pots. 
+
+9	Rnd Volts	0 1 0 0 1
+				CV inputs are fed into a bit flipper or filter of some sort
+				that outputs related random voltages at all outputs. 
+
+10				0 1 0 1 0
+	
+11				0 1 0 1 1
+12				0 1 1 0 0
+13				0 1 1 0 1 
+14				0 1 1 1 0
+15				0 1 1 1 1
+
+// Audio //
+If we can figure out how to get audio out of the 
+outputs in a decent way, these modes start here. 
+
+16				1 0 0 0 0
+17				1 0 0 0 1
+18				1 0 0 1 0
+19				1 0 0 1 1
+20				1 0 1 0 0
+21				1 0 1 0 1
+22				1 0 1 1 0 
+23				1 0 1 1 1 
+24				1 1 0 0 0
+25				1 1 0 0 1
+26				1 1 0 1 0
+27				1 1 0 1 1
+28				1 1 1 0 0
+29				1 1 1 0 1
+30				1 1 1 1 0
+31				1 1 1 1 1

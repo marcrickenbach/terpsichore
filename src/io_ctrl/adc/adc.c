@@ -149,8 +149,8 @@ static void config_instance_deferred(
         struct FKMG_IO_CTRL_ADC_Instance     * p_inst,
         struct FKMG_IO_CTRL_ADC_Instance_Cfg * p_cfg)
 {
-    p_inst->adc_t_duration_ms = p_cfg->adc_t_duration_ms;
-    p_inst->adc_t_period_ms = p_cfg->adc_t_period_ms;
+    // p_inst->adc_t_duration_ms = p_cfg->adc_t_duration_ms;
+    // p_inst->adc_t_period_ms = p_cfg->adc_t_period_ms;
     init_io_ctrl_adc_device(p_inst);
     init_conversion_timer(p_inst);
 }
@@ -258,7 +258,6 @@ static void broadcast_adc_converted(
 }
 
 
-
 /* **************
  * Listener Utils
  * **************/
@@ -276,7 +275,6 @@ static void add_listener_for_signal_to_listener_list(
     sys_snode_t * p_node = &p_lsnr->node.listener;
     sys_slist_append(p_list, p_node);
 }
-
 
 
 /* **************
@@ -321,18 +319,17 @@ static void on_conversion_timer_expiry(struct k_timer * p_timer)
 /* Cause conversion event to occur immediately and then regularly after that. */
 static void start_conversion_timer(struct FKMG_IO_CTRL_ADC_Instance * p_inst)
 {
-    #define CONVERSION_INITIAL_DURATION     K_MSEC(p_inst->adc_t_duration_ms)
-    #define CONVERSION_AUTO_RELOAD_PERIOD   K_MSEC(p_inst->adc_t_period_ms)
+    #define CONVERSION_INITIAL_DURATION     K_USEC(p_inst->adc_t_duration_us)
+    #define CONVERSION_AUTO_RELOAD_PERIOD   K_USEC(p_inst->adc_t_period_us)
     k_timer_start(&p_inst->timer.conversion, CONVERSION_INITIAL_DURATION,
             CONVERSION_AUTO_RELOAD_PERIOD);
 }
-
 
 static int init_io_ctrl_adc_device(struct FKMG_IO_CTRL_ADC_Instance * p_inst)
 {
     int err;
 	uint32_t count = 0;
-    uint16_t * buf = p_inst->adc_buffer;
+    int16_t * buf = p_inst->adc_buffer[ARRAY_SIZE(adc_channels)];
 
     /* Configure the sequence. */
     p_inst->sequence = (struct adc_sequence){
@@ -421,20 +418,11 @@ static void state_run_run(void * o)
                     
                     struct FKMG_IO_CTRL_ADC_SM_Evt_Sig_Convert * p_convert = &p_evt->data.convert;
 
+                    (void)adc_sequence_init_dt(&adc_channels[p_convert->id], &p_inst->sequence);
                     int err = adc_read_dt(&adc_channels[p_convert->id], &p_inst->sequence);
                     if (err < 0) {
                         LOG_ERR("Could not read (%d)\n", err);
                     }
-
-                    /* Broadcast the event to listeners. */
-                    struct FKMG_IO_CTRL_ADC_Evt evt = {
-                        .sig = k_FKMG_IO_CTRL_ADC_Evt_Sig_Converted,
-                        .data.converted.id = p_convert->id,
-                        .data.converted.val = p_inst->adc_buffer
-                    };
-
-                    broadcast_event_to_listeners(p_inst, &evt);
-
                     break;
         }
             break;
@@ -516,6 +504,12 @@ void FKMG_IO_CTRL_ADC_Add_Listener(struct FKMG_IO_CTRL_ADC_Listener_Cfg * p_cfg)
     init_listener(p_lsnr);
     config_listener(p_lsnr, p_cfg);
     add_listener_for_signal_to_listener_list(p_cfg);
+}
+
+uint16_t FKMG_IO_CTRL_ADC_Get_Value(struct FKMG_IO_CTRL_ADC_Instance * p_inst, 
+                                    enum   FKMG_IO_CTRL_ADC_Id id)
+{
+   return (uint16_t)p_inst->adc_buffer[id];
 }
 
 #if CONFIG_FKMG_IO_CTRL_NO_OPTIMIZATIONS

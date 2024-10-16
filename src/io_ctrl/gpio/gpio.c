@@ -141,27 +141,6 @@ static void config_instance_queues(
     p_inst->msgq.p_sm_evts = p_cfg->msgq.p_sm_evts;
 }
 
-/* Forward reference */
-static void on_conversion_timer_expiry(struct k_timer * p_timer);
-/* Cause conversion event to occur immediately and then regularly after that. */
-static void init_conversion_timer(struct FKMG_IO_CTRL_GPIO_Instance * p_inst)
-{
-    #define ON_CONVERSION_TIMER_EXPIRY  on_conversion_timer_expiry
-    #define ON_CONVERSION_TIMER_STOPPED NULL
-    k_timer_init(&p_inst->timer.conversion, ON_CONVERSION_TIMER_EXPIRY,
-            ON_CONVERSION_TIMER_STOPPED);
-}
-
-static void config_instance_deferred(
-        struct FKMG_IO_CTRL_GPIO_Instance     * p_inst,
-        struct FKMG_IO_CTRL_GPIO_Instance_Cfg * p_cfg)
-{
-
-}
-
-/* Since configuration starts on caller's thread, configure fields that require
- * immediate and/or inconsequential configuration and defer rest to be handled
- * by our own thread later. */
 static void config_instance_immediate(
         struct FKMG_IO_CTRL_GPIO_Instance     * p_inst,
         struct FKMG_IO_CTRL_GPIO_Instance_Cfg * p_cfg)
@@ -188,7 +167,6 @@ static void init_instance(struct FKMG_IO_CTRL_GPIO_Instance * p_inst)
     clear_instance(p_inst);
     init_instance_lists(p_inst);
 }
-
 
 
 /* ************
@@ -222,7 +200,6 @@ static void broadcast(
         struct FKMG_IO_CTRL_GPIO_Evt      * p_evt,
         struct FKMG_IO_CTRL_GPIO_Listener * p_lsnr)
 {
-    /* call the listener, passing the event */
     if(p_lsnr->cb)  p_lsnr->cb(p_evt);
 }
 
@@ -237,8 +214,6 @@ static void broadcast_event_to_listeners(
     }
 }
 
-/* There's only 1 listener for instance initialization, and it is provided in
- * the cfg struct. */
 static void broadcast_instance_initialized(
         struct FKMG_IO_CTRL_GPIO_Instance * p_inst,
         FKMG_IO_CTRL_GPIO_Listener_Cb       cb)
@@ -310,7 +285,6 @@ static void gpio_callback_handler(const struct device * port, struct gpio_callba
             .sig = k_FKMG_IO_CTRL_GPIO_Evt_Sig_GPIO_Interrupt,
             .data.interrupt.pin = pins,
     };
-
     broadcast_event_to_listeners(p_inst, &evt);
 }
 
@@ -336,14 +310,7 @@ static int init_io_ctrl_gpio_device(struct FKMG_IO_CTRL_GPIO_Instance * p_inst)
         uint32_t cb_flag;
 
         if(flags & GPIO_INPUT){
-            if (flags & GPIO_PULL_UP) {
-                cb_flag = GPIO_INT_EDGE_FALLING;
-            } else if (flags & GPIO_PULL_DOWN) {
-                cb_flag = GPIO_INT_EDGE_RISING;
-            } else {
-                cb_flag = GPIO_INT_EDGE_BOTH;
-            }
-            gpio_pin_interrupt_configure(fkmg_gpio[i].port, fkmg_gpio[i].pin, cb_flag);
+            gpio_pin_interrupt_configure(fkmg_gpio[i].port, fkmg_gpio[i].pin, GPIO_INT_EDGE_TO_ACTIVE);
             gpio_init_callback(&p_inst->cb[i], gpio_callback_handler, BIT(fkmg_gpio[i].pin));
             gpio_add_callback(fkmg_gpio[i].port, &p_inst->cb[i]);
         }
@@ -356,39 +323,24 @@ static int init_io_ctrl_gpio_device(struct FKMG_IO_CTRL_GPIO_Instance * p_inst)
  * FSM States
  * **********/
 
-/* Forward declaration of state table */
 static const struct smf_state states[];
-
 enum state{
-    init,   // Init instance - should only occur once, after thread start
-    run,    // Run - handles all events while running (e.g. conversion, etc.)
-    deinit, // Deinit instance - should only occur once, after deinit event
-            // (if implemented)
+    init,
+    run,
+    deinit,
 };
-
-
-/* Init state responsibility is to complete initialization of the instance, let
- * an instance config listener know we've completed initialization (i.e. thread
- * is up and running), and then transition to next state. Init state occurs
- * immediately after thread start and is expected to only occur once. */
 
 static void state_init_run(void * o)
 {
     struct smf_ctx * p_sm = o;
     struct FKMG_IO_CTRL_GPIO_Instance * p_inst = sm_ctx_to_instance(p_sm);
 
-    /* Get the event. */
     struct FKMG_IO_CTRL_GPIO_SM_Evt * p_evt = &p_inst->sm_evt;
 
-    /* Expecting only an "init instance" event. Anything else is an error. */
     assert(p_evt->sig == k_FKMG_IO_CTRL_GPIO_SM_Evt_Sig_Init_Instance);
 
-    /* We init'd required params on the caller's thread (i.e.
-     * xxx_Init_Instance()), now finish the job. Since this is an
-     * Init_Instance event the data contains the intance cfg. */
     struct FKMG_IO_CTRL_GPIO_SM_Evt_Sig_Init_Instance * p_ii = &p_evt->data.init_inst;
     
-    config_instance_deferred(p_inst, &p_ii->cfg);
     broadcast_instance_initialized(p_inst, p_ii->cfg.cb);
 
     int ret = init_io_ctrl_gpio_device(p_inst);
@@ -399,9 +351,6 @@ static void state_init_run(void * o)
 
     smf_set_state(SMF_CTX(p_sm), &states[run]);
 }
-
-/* Run state responsibility is to be the root state to handle everything else
- * other than instance initialization. */
 
 static void state_run_entry(void * o)
 {
@@ -414,13 +363,11 @@ static void state_run_run(void * o)
     struct smf_ctx * p_sm = o;
     struct FKMG_IO_CTRL_GPIO_Instance * p_inst = sm_ctx_to_instance(p_sm);
 
-    /* Get the event. */
     struct FKMG_IO_CTRL_GPIO_SM_Evt * p_evt = &p_inst->sm_evt;
 
     switch(p_evt->sig){
         default: break;
         case k_FKMG_IO_CTRL_GPIO_SM_Evt_Sig_Init_Instance:
-            /* Should never occur. */
             assert(false);
             break;
         case k_FKMG_IO_CTRL_GPIO_SM_Evt_Sig_Write_State:
@@ -431,9 +378,8 @@ static void state_run_run(void * o)
 }
 
 static const struct smf_state states[] = {
-    /*                                      entry               run  exit */
-    [  init] = SMF_CREATE_STATE(           NULL,   state_init_run, NULL, NULL, NULL),
-    [   run] = SMF_CREATE_STATE(state_run_entry,    state_run_run, NULL, NULL, NULL),
+    [  init] = SMF_CREATE_STATE(NULL, state_init_run, NULL, NULL, NULL),
+    [   run] = SMF_CREATE_STATE(state_run_entry, state_run_run, NULL, NULL, NULL),
 };
 
 /* ******
@@ -444,19 +390,15 @@ static void thread(void * p_1, /* struct GPIO Instance* */
         void * p_2_unused, void * p_3_unused)
 {
     struct FKMG_IO_CTRL_GPIO_Instance * p_inst = p_1;
-    /* NOTE: smf_set_initial() executes the entry state. */
     struct smf_ctx * p_sm = &p_inst->sm;
     smf_set_initial(SMF_CTX(p_sm), &states[init]);
 
-    /* Get the state machine event queue and point to where to put the dequeued
-     * event. */
     struct k_msgq * p_msgq = p_inst->msgq.p_sm_evts;
     struct FKMG_IO_CTRL_GPIO_SM_Evt * p_evt = &p_inst->sm_evt;
 
     bool run = true;
 
     while(run){
-        /* Wait on state machine event. Cache it then run state machine. */
         k_msgq_get(p_msgq, p_evt, K_FOREVER);
         run = smf_run_state(SMF_CTX(p_sm)) == 0;
     }

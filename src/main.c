@@ -45,10 +45,10 @@ LOG_MODULE_REGISTER(main);
 
 /* Enable Thread Defines. */
 
-#define CONFIG_FKMG_IO_CTRL_ADC_THREAD      1
+#define CONFIG_FKMG_IO_CTRL_ADC_THREAD      0
 #define CONFIG_FKMG_IO_CTRL_DAC_THREAD      0
-#define CONFIG_FKMG_IO_CTRL_GPIO_THREAD     1
-#define CONFIG_FKMG_IO_CTRL_I2C_THREAD      1
+#define CONFIG_FKMG_IO_CTRL_GPIO_THREAD     0
+#define CONFIG_FKMG_IO_CTRL_I2C_THREAD      0
 
 
 /* *****************************************************************************
@@ -214,6 +214,8 @@ int main (void) {
         .task.sm.prio = K_LOWEST_APPLICATION_THREAD_PRIO,
         .msgq.p_sm_evts = &fkmg_io_ctrl_adc_sm_evt_q,
         .cb = on_fkmg_io_ctrl_adc_instance_initialized,
+        .adc_t_duration_us = 100,
+        .adc_t_period_us = 100
     };
     FKMG_IO_CTRL_ADC_Init_Instance(&fkmg_io_ctrl_adc_inst_cfg);
     wait_on_instance_initialized();

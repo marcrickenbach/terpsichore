@@ -22,6 +22,50 @@ future) channel LFO, or even audio output (to be determined).
 
 A USB mini-B input will allow for easy firmware updates.
 
+## Project Outline
+
+APPLICATION LAYER:
+
+Overseeing layer that maintains all threads. This is the
+only thread able to directly communicate between multiple
+lower-level threads. All modes, processing commands are
+dispatched from here. 
+
+    A. VCA Processing (AO)
+    Active object layer that receives information, e.g.
+    ADC values, scales them or applies other processing. 
+    This layer then sends that data to the queue. 
+    
+        1. i2c write queue (AO)
+           An active object layer that handles a queue 
+           of processed data to write to the DAC. The
+           VCA processing is responsible for processing
+           the data to write to the DAC, e.g. for a 
+           straight normal mode, we might take scaled
+           ADC CV values, package them and queue them
+           for output to the VCA via the DAC. 
+
+            a. DAC7578 i2c driver (HAL)
+               This layer is thin and interacts directly
+               with the hardware using the STM32 HAL 
+               library and DMA. This is a header file 
+               that contains only init, read and write
+               functions. 
+
+    B. ADC Processing (AO)
+    Recieves and processes ADC read values and sends
+    them to application layer. 
+
+        1. ADC read queue (AO)
+        Maintains a queue that handles ADC read timings
+        and dispatches these values appropriately. 
+        Slight possibility we wont need this layer and
+        instead just run the ADC driver off of a timer. 
+
+            a. ADC driver (HAL)
+            Thin lower-level layer that interacts 
+            directly with the STM32 ADC peripheral
+            using their HAL library and DMA. 
 
 ## Necessary Modules
 
