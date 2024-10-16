@@ -1,15 +1,47 @@
 /* TERPSICHORE OVERLAY */
 
-#include <dt-bindings/clock/stm32f4_clock.h>
+// #include <dt-bindings/clock/stm32f4_clock.h>
+
 
 /{
     zephyr,user {
-        io-channels         =  <&adc1 0>, <&adc1 1>, <&adc1 2>, <&adc1 3>, <&adc1 4>;
-        gpio-ext-css-gpios  =  <&gpioc 3 GPIO_ACTIVE_HIGH>;
+        io-channels         =  <&adc1 0>, // CV In 1
+                               <&adc1 1>, // CV In 2
+                               <&adc1 2>, // CV In 3
+                               <&adc1 3>, // CV In 4
+                               <&adc1 6>, // CH 1 Pot
+                               <&adc1 7>, // CH 2 Pot
+                               <&adc1 8>, // CH 3 Pot
+                               <&adc1 9>, // CH 4 Pot
+                               <&adc1 10>;// Param Pot
+
+        dac = <&dac1>;
+		dac-channel-id = <1>;
+		dac-resolution = <12>;
+
+        i2c = &i2c1;
+        i2c-addr = <0x4C>;
+
+        fkmg-gpios =    <&gpioc 14 GPIO_ACTIVE_HIGH>, // Mode LEDs
+                        <&gpiob  6 GPIO_ACTIVE_HIGH>,
+                        <&gpiob  5 GPIO_ACTIVE_HIGH>,
+                        <&gpiod  2 GPIO_ACTIVE_HIGH>,
+                        <&gpioc 11 GPIO_ACTIVE_HIGH>,
+
+                        <&gpioc 13 GPIO_ACTIVE_HIGH>, // Sub LEDs
+                        <&gpiob  7 GPIO_ACTIVE_HIGH>,
+                        <&gpiob  4 GPIO_ACTIVE_HIGH>,
+                        <&gpioc 12 GPIO_ACTIVE_HIGH>,
+                        <&gpioc 10 GPIO_ACTIVE_HIGH>,
+
+                        <&gpioc 4 GPIO_ACTIVE_HIGH>, // DAC Switch
+                        <&gpiob 8 GPIO_ACTIVE_HIGH>, // Mode Select
+                        <&gpiob 9 GPIO_ACTIVE_HIGH>; // Sub Select
     };
 };
 
-/**************************************** 
+
+/****************************************  
  * Disable Nucleo pins for btn and led */
 
 &leds {
@@ -48,61 +80,91 @@
     status = "okay";
 };
 
-
 &adc1 {
-    pinctrl-0 = <&adc1_in0_pa0 
+    pinctrl-0 = <&adc1_in0_pa0
                  &adc1_in1_pa1 
                  &adc1_in2_pa2 
                  &adc1_in3_pa3
-                 &adc1_in4_pa4>;  
+                 &adc1_in6_pa6
+                 &adc1_in7_pa7
+                 &adc1_in8_pb0
+                 &adc1_in9_pb1
+                 &adc1_in10_pc0>;  
     pinctrl-names = "default";
     st,adc-prescaler = <2>;
     status = "okay";
     #address-cells = <1>;
 	#size-cells = <0>;
 
-	channel@0 {
+	channel@0 { // CV In 1
 		reg = <0>;
 		zephyr,gain = "ADC_GAIN_1";
 		zephyr,reference = "ADC_REF_INTERNAL";
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
 		zephyr,resolution = <12>;
 	};
-    channel@1 {
+    channel@1 { // CV In 1
         reg = <1>;
         zephyr,gain = "ADC_GAIN_1";
         zephyr,reference = "ADC_REF_INTERNAL";
         zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
         zephyr,resolution = <12>;
     };
-    channel@2 {
+    channel@2 { // CV In 1
         reg = <2>;
         zephyr,gain = "ADC_GAIN_1";
         zephyr,reference = "ADC_REF_INTERNAL";
         zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
         zephyr,resolution = <12>;
     };
-    channel@3 {
+    channel@3 { // CV In 1
         reg = <3>;
         zephyr,gain = "ADC_GAIN_1";
         zephyr,reference = "ADC_REF_INTERNAL";
         zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
         zephyr,resolution = <12>;
     };
-    channel@4 {
+    channel@6 {
         reg = <4>;
         zephyr,gain = "ADC_GAIN_1";
         zephyr,reference = "ADC_REF_INTERNAL";
         zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
-        zephyr,resolution = <12>;
+        zephyr,resolution = <8>;
+    };
+    channel@7 {
+        reg = <4>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <8>;
+    };
+    channel@8 {
+        reg = <4>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <8>;
+    };
+    channel@9 {
+        reg = <4>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <8>;
+    };
+    channel@10 {
+        reg = <4>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <8>;
     };
 };
 
-
 &dac1 {
-    pinctrl-0 = <&dac_out1_pa4 &dac_out2_pa5>;  
+    pinctrl-0 = <&dac_out2_pa5>;  
     pinctrl-names = "default";
-    status = "disabled";  
+    status = "okay";  
 };
 
 &can1 {
@@ -127,30 +189,8 @@
     };
 };
 
-&spi2 {
-    status = "okay"; 
-    pinctrl-0 = <&spi2_mosi_pc1 &spi2_sck_pb10 &spi2_miso_pc2>;
-    pinctrl-names = "default";
-    clock-frequency = <5250000>; // 5.25 MHz
-    cs-gpios = <&gpioc 3 GPIO_ACTIVE_LOW>;
-    label = "SPI2";
-    dmas = <&dma1 4 0 0x20040 0x03>, <&dma1 3 0 0x20040 0x03>;
-    dma-names = "tx", "rx";
-    spi2_gpio: gpio@0 { // might need to replace second part with mcp23s17
-        label="mcp23s17";
-        compatible = "microchip,mcp23s17";
-        gpio-controller;
-        #gpio-cells = <2>;
-        spi-max-frequency = <800000>;
-        reg = <0>;
-        ngpios = <16>;
-        // spi-cpol;
-        // spi-cpha;
-    };
-};
-
 &i2c1 {
-    status = "disabled";
+    status = "okay";
     pinctrl-0 = <&i2c1_scl_pb8 &i2c1_sda_pb7>;
     pinctrl-names = "default";
 };
@@ -168,13 +208,10 @@
     status="okay";
 };
 
-
 &dma2 {
     compatible = "st,stm32-dma-v1";
     status="okay";
 };
-
-
 
 &usart1 {
     compatible = "st,stm32-uart";
@@ -184,39 +221,4 @@
     // pinctrl-names = "default";
     // current-speed = <31250>;
     status = "disabled"; 
-};
-
-
-
-&timers1 {
-    status = "disabled"; 
-    st,prescaler = <168>;
-    st,countermode = <0>;
-    compatible = "st,stm32-timers";
-    counter_timer1: counter {
-        compatible = "st,stm32-counter";
-        status = "disabled";
-    };
-};
-
-&timers2 {
-    status = "disabled";
-    st,prescaler = <1000>;
-    st,countermode = <0>;
-    compatible = "st,stm32-timers";
-    counter_timer2: counter {
-        compatible = "st,stm32-counter";
-        status = "okay";
-    };
-};
-
-&timers3 {
-    status = "disabled";
-    st,prescaler = <500>;
-    st,countermode = <0>;
-    compatible = "st,stm32-timers";
-    counter_timer3: counter {
-        compatible = "st,stm32-counter";
-        status = "disabled";
-    };
 };
