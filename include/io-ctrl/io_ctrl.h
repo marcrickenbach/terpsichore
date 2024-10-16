@@ -12,7 +12,6 @@
 #include "dac/dac.h"
 #include "gpio/gpio.h"
 #include "i2c/i2c.h"
-#include "led/led.h"
 
 #ifdef   __cplusplus
 extern "C"
