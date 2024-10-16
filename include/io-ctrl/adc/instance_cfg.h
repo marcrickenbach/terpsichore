@@ -64,8 +64,8 @@ struct FKMG_IO_CTRL_ADC_Instance_Cfg{
 
     /* ADC Timer Periods in milliseconds. These values configure the timer that will call the
     converstation.*/
-    uint32_t adc_t_duration_ms;
-    uint32_t adc_t_period_ms;
+    uint32_t adc_t_duration_us;
+    uint32_t adc_t_period_us;
 };
 
 #ifdef __cplusplus

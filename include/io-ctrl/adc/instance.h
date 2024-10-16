@@ -86,13 +86,13 @@ struct FKMG_IO_CTRL_ADC_Instance{
     
     struct adc_sequence sequence; 
 
-    uint32_t adc_t_duration_ms;
-    uint32_t adc_t_period_ms;
+    uint32_t adc_t_duration_us;
+    uint32_t adc_t_period_us;
 
     /* Current element. */
     enum FKMG_IO_CTRL_ADC_Id id;
 
-    uint16_t adc_buffer; 
+    int16_t * adc_buffer; 
 
 };
 
