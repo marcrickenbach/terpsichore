@@ -1,0 +1,21 @@
+title: Texas Instruments DAC7578 8-channel DAC
+
+description: |
+  The DAC7578 is a low-power, 12-bit digital-to-analog converter with I2C interface.
+
+properties:
+  compatible:
+    enum:
+      - ti,dac7578
+
+  reg:
+    description: I2C address of the DAC7578 device
+    constraint: true
+    type: uint32-array
+    category: required
+
+  vref-supply:
+    description: Power supply for the DAC (analog reference voltage)
+    type: phandle
+
+  # Add more properties as needed (e.g., initialization config, resolution)
