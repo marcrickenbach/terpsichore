@@ -4,21 +4,21 @@ Terpsichore is a signal animator Eurorack module built on the
 STM32F405RGT microcontroller. At the core of the module is a 
 4/8 channel VCA circuit that takes audio or CV inputs and routes
 them in interesting ways to the eight outputs on the front panel. 
-Each of the four channels include an audio/cv input, a cv input
+Each of the four channels includes an audio/cv input, a cv input
 that controls the vca, and two outputs, x and y. Originally 
 conceived of as a four-channel crossfader/panner, the sampled
 CV value allows us to controll the animation of the signals in
 a variety of useful and playful ways. 
 
 Besides crossfading and panning, other (potential) functions 
-include sequential swith, multi-channel morph, CV processing,
-amplitude modulation, signal multiplication, sequencing, CV
-delay line and much more. The original intent has grown into 
-a robust utility module with a very basic interface. Internal
+include sequential switch, multi-channel morph, CV processing,
+amplitude modulation, signal copying, sequencing, CV delay line 
+and much more. The original intent has grown into a robust 
+utility module with a very basic interface. Internal
 analog switches also allow the user to switch all outputs 
 to audio/cv output to be tied directly to the 12-bit DAC so 
 that Terpsichore can also be used as a 6 (possibly 8 in the
-future) channel LFO, or even audio output (to be determined). 
+future) channel LFO. 
 
 A USB mini-B input will allow for easy firmware updates.
 
@@ -41,16 +41,16 @@ dispatched from here.
            of processed data to write to the DAC. The
            VCA processing is responsible for processing
            the data to write to the DAC, e.g. for a 
-           straight normal mode, we might take scaled
+           straight, normal mode, we might take scaled
            ADC CV values, package them and queue them
            for output to the VCA via the DAC. 
 
-            a. DAC7578 i2c driver (HAL)
+            a. DAC7578 i2c driver (Zephyr)
                This layer is thin and interacts directly
-               with the hardware using the STM32 HAL 
-               library and DMA. This is a header file 
-               that contains only init, read and write
-               functions. 
+               with the hardware. It is based on an
+               existing TI DAC driver in Zephyr and
+               makes use of the Zephyr API to control
+               the I2C Dac. 
 
     B. ADC Processing (AO)
     Recieves and processes ADC read values and sends
@@ -62,10 +62,9 @@ dispatched from here.
         Slight possibility we wont need this layer and
         instead just run the ADC driver off of a timer. 
 
-            a. ADC driver (HAL)
+            a. ADC driver (Zephyr)
             Thin lower-level layer that interacts 
-            directly with the STM32 ADC peripheral
-            using their HAL library and DMA. 
+            directly with the ADC peripheral.
 
 ## Necessary Modules
 
@@ -80,7 +79,7 @@ Listed in order of importance:
    tied to the outputs. 
 4. Button Driver
    Only two buttons directly into the mcu, but will need
-   to handle double press and long press.
+   to handle double press and long press eventually. 
 5. DAC Driver
    The 12-bit dac handles both the VCA voltages and can
    be used to output directly. 

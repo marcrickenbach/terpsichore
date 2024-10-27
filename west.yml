@@ -4,15 +4,15 @@ manifest:
     - name: zephyr
       path: zephyr
       revision: main
-    - name: hal_stm32
-      path: modules/hal/stm32
+ # DAC Driver
+    - name: dac7578
+      url: https://github.com/marcrickenbach/dac7578
       revision: main
+      path: dac7578
 
   self:
     path: Terpsichore
 
   west:
-    # Add additional Zephyr modules.
     extra_modules:
       - boards
-

@@ -1,5 +1,0 @@
-board:
-  name: fkmg_stm32f405
-  vendor: fkmg
-  socs:
-    - name: stm32f405xx

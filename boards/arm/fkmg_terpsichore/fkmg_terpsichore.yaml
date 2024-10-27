@@ -1,0 +1,22 @@
+identifier: fkmg_terpsichore
+name: FKMG TERPSICHORE
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 128
+flash: 1024
+supported:
+  - counter
+  - adc
+  - dac
+  - spi
+  - i2c
+  - uart
+  - can
+  - gpio
+  - watchdog
+  - backup_sram
+vendor: fkmg

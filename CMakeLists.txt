@@ -8,37 +8,31 @@ set(BOARD fkmg_stm32f405)
 # Set BOARD_ROOT to the parent directory of the 'boards' folder
 list(APPEND BOARD_ROOT "/Users/marcrickenbach/fkmg-dev/Terpsichore")
 
-
-# For debugging, print the BOARD_ROOT path
-message("BOARD_ROOT is: ${BOARD_ROOT}")
-message("BOARD is: ${BOARD}")
-message("ZEPHYR BASE is: $ENV{ZEPHYR_BASE}")
-
 set(DTC_OVERLAY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/terpsichore.overlay")
+
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-
 project(TERPSICHORE)
 
-
+# Optimization flags based on build type
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build.")
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g" CACHE STRING "" FORCE)
+elseif(CMAKE_BUILD_TYPE MATCHES Release)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3" CACHE STRING "" FORCE)
+elseif(CMAKE_BUILD_TYPE MATCHES MinSizeRel)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os" CACHE STRING "" FORCE)
+elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g" CACHE STRING "" FORCE)
+endif()
 
 # Explicitly list source files
 set(app_sources
-    # src/leds.c
     src/main.c
-    # src/pot.c 
-    # src/io_ctrl/adc/adc.c
-    # src/io_ctrl/dac/dac.c
-    # src/io_ctrl/i2c/i2c.c
-    # src/io_ctrl/gpio/gpio.c
-    # src/io_ctrl/led/led.c
-    # Add other source files here
 )
 
 target_sources(app PRIVATE ${app_sources})
 
 # Main Include Directory
 target_include_directories(app PRIVATE include)
-
-
