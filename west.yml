@@ -11,7 +11,7 @@ manifest:
   projects:
     - name: zephyr
       remote: zephyrproject-rtos
-      revision: v3.7.0
+      revision: main
       import:
         name-allowlist:
           - hal_nxp
