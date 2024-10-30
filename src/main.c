@@ -116,14 +116,14 @@ static void wait_on_instance_initialized(void)
 
 int main(void) {
     int ret;
-/*  
-    const struct device *dac_dev = DEVICE_DT_GET(DT_NODELABEL(dac7578));
 
+    const struct device *dac_dev = DEVICE_DT_GET(DT_NODELABEL(dac7578));
+ 
   if (!device_is_ready(dac_dev)) {
         printk("DAC7578 device not ready\n");
         return 0;
     }
-
+/* 
     printk("DAC7578 device ready\n");
     return 0;
 
