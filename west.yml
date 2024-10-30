@@ -1,18 +1,25 @@
 manifest:
-  version: 0.7
+  self:
+    west-commands: scripts/west-commands.yml
+
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+    - name: fkmg
+#      url-base: https://github.com/marcrickenbach
+      url-base: git@github.com:marcrickenbach
+
   projects:
     - name: zephyr
-      path: zephyr
-      revision: main
- # DAC Driver
+      remote: zephyrproject-rtos
+      revision: v3.7.0
+      import:
+        name-allowlist:
+          - hal_nxp
+          - hal_stm32
+          - cmsis
     - name: dac7578
       url: https://github.com/marcrickenbach/dac7578
       revision: main
       path: dac7578
-
-  self:
-    path: Terpsichore
-
-  west:
-    extra_modules:
-      - boards
