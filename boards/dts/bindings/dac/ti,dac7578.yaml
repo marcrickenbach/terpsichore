@@ -18,3 +18,4 @@ properties:
     description: Power supply for the DAC (analog reference voltage)
     type: phandle
 
+# https://docs.zephyrproject.org/latest/build/dts/bindings-intro.html
