@@ -5,9 +5,7 @@ manifest:
   remotes:
     - name: zephyrproject-rtos
       url-base: https://github.com/zephyrproject-rtos
-
     - name: fkmg
-#      url-base: https://github.com/marcrickenbach
       url-base: git@github.com:marcrickenbach
 
   projects:
@@ -22,4 +20,4 @@ manifest:
     - name: dac7578
       url: https://github.com/marcrickenbach/dac7578
       revision: main
-      path: drivers/dac7578
+      path: modules/fkmg/dac7578
