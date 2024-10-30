@@ -1,4 +1,8 @@
 build/
+bootloader/
+modules/
+tools/
+
 
 # editors
 *.swp
