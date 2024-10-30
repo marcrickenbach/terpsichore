@@ -22,6 +22,6 @@
 	// `west` will install zephyr in /workspaces when we configure the container
 	// so we override the environment setting here.
 	"remoteEnv": {
-		"ZEPHYR_BASE": "/workspaces/zephyr"
+		"ZEPHYR_BASE": "/workspaces/terpsichore/zephyr"
 	}
 }
