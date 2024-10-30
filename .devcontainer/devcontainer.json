@@ -1,0 +1,27 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/ubuntu
+{
+	// See https://github.com/zephyrproject-rtos/docker-image/pkgs/container/zephyr-build
+	// for the available builds.
+	"name": "terpsichore",
+	"image": "ghcr.io/zephyrproject-rtos/zephyr-build:v0.27.4",
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+//	"remoteUser": "vscode",
+//	"remoteUser": "user",
+//	"mounts": [
+//		"source=splett,target=${containerWorkspaceFolder},type=volume"
+//	]
+	// The image above has ZEPHYR_BASE hard coded to /workdir/zephyr. However
+	// `west` will install zephyr in /workspaces when we configure the container
+	// so we override the environment setting here.
+	"remoteEnv": {
+		"ZEPHYR_BASE": "/workspaces/zephyr"
+	}
+}
