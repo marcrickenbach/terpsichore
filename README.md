@@ -22,6 +22,66 @@ future) channel LFO.
 
 A USB mini-B input will allow for easy firmware updates.
 
+
+## VSCode Devcontainer
+This project makes use of a Docker Devcontainer for development. 
+Below are the steps for cloning this repository and launching
+it within the container in VSCode. 
+
+### Building the Container
+Ensure that VSCode and Docker are installed and running. 
+
+In the VSCode Command Palette (CMD + SHIFT + P), select:
+Dev Containers: Clone Repository in Container Volume... 
+and enter the repository's address: 
+https://github.com/marcrickenbach/terpsichore.git
+
+This will create a container with the name terpsichore as well
+as a Docker volume with a similar name. The container will mount
+to /workspaces.
+
+As the Docker image will pull the Zephyr repo to the container
+along with other necessary tools, this initial process will take
+some time. 
+
+### Building Zephyr and its tools
+Open a VSCode terminal. You should be at /workspaces/terpsichore,
+which is inside the cloned repository. From here, run the following 
+commands: 
+```
+$ west init -l
+$ west update
+```
+The -l flag will create a new west workspace using the local west.yml
+file at the root of the project directory. This west manifest file
+tells the build system what modules we need to build. The west update
+command will clone the main revision of Zephyr to the ../zephyr directory
+as well as the specified modules to ../modules and create ../west to 
+track everything. The idea here is that Zephyr and all of its modules
+remain outside of the application repository. 
+
+The Zephyr devcontainer image pre-configures the ZEPHYR_BASE environmental
+variable to /workdir/zephyr, which we change in our devcontainer.json to:
+/workspaces/zephyr. If for some reason this hasn't been automatically
+changed, we can manually change this by running the following command:
+```
+$ export ZEPHYR_BASE=/workspaces/zephyr
+```
+
+### Building Terpsichore
+
+You should now be able to build the Terpsichore project by running the 
+following command: 
+```
+# For a pristine build:
+$ west build -p always -b fkmg_terpsichore
+```
+```
+# For a normal build
+$ west build -b fkmg_terpsichore
+```
+
+
 ## Project Outline
 
 APPLICATION LAYER:
@@ -86,9 +146,6 @@ Listed in order of importance:
 
 More. 
 
-## Devcontainer
-
-Will want to containerize this at some point. 
 
 ## Debugging
 
