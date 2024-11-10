@@ -90,7 +90,7 @@ Pylint.txt
 YAMLLint.txt
 
 ### Start VisualStudioCode ###
-**/.vscode/*
+# **/.vscode/*
 !**/.vscode/README.md
 !**/.vscode/*.default.json
 !**/.vscode/*.default.code-workspace

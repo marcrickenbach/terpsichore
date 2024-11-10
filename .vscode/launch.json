@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "J-Link Debug",
+            "type": "cortex-debug",
+            "request": "launch",
+            "device": "STM32F405RG",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/zephyr/zephyr.elf",
+            "servertype": "external",
+            "gdbTarget": "host.docker.internal:2331",
+            "armToolchainPath": "/usr/bin/",
+            "gdbPath": "/usr/bin/gdb-multiarch",
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "raw",
+            "preLaunchCommands": [
+                "set mem inaccessible-by-default off"
+            ],
+            "overrideLaunchCommands": [
+                "monitor halt",
+                "monitor reset",
+                "load ${workspaceFolder}/build/zephyr/zephyr.elf",
+            ],
+        },
+        {
+            "name": "J-Link Attach",
+            "type": "cortex-debug",
+            "request": "attach",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/zephyr/zephyr.elf",
+            "servertype": "external",
+            "gdbTarget": "host.docker.internal:2331",
+            "gdbPath": "/usr/bin/gdb-multiarch",
+            "armToolchainPath": "/opt/gcc-arm-none-eabi/bin/",
+            "showDevDebugOutput": "raw",
+        },
+    ]
+}
