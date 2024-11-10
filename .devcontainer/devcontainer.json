@@ -5,7 +5,7 @@
 	// for the available builds.
 	"name": "terpsichore",
 	"image": "ghcr.io/zephyrproject-rtos/zephyr-build:v0.27.4",
-
+	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi gdb-multiarch",
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
