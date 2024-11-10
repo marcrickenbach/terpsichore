@@ -11,7 +11,7 @@
             "servertype": "external",
             "gdbTarget": "host.docker.internal:2331",
             "armToolchainPath": "/usr/bin/",
-            "gdbPath": "/usr/bin/gdb-multiarch",
+            "gdbPath": "/usr/bin/gdb",
             "runToEntryPoint": "main",
             "showDevDebugOutput": "raw",
             "preLaunchCommands": [
