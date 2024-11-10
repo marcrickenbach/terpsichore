@@ -1,0 +1,73 @@
+{
+	"folders": [
+		// Terpsichore repo represented as a folder named project
+		{
+			"name": "project",
+			"path": ".."
+		},
+		// Zephyr OS
+		{
+			"name": "zephyr",
+			"path": "../../zephyr"
+		},
+		// Zephyr modules
+		{
+			"name": "modules",
+			"path": "../../modules"
+		},
+		// Zephyr .west folder
+		{
+			"path": "../../.west"
+		}
+	],
+	"settings": {
+		// Hush CMake
+		"cmake.configureOnOpen": false,
+
+		// When selecting file in explorer, if already open in a tab, show
+		// existing tab, don't create new one.
+		"workbench.editor.revealIfOpen": true,
+
+		// When selecting tabbed editor don't auto-highlight in explorer.
+		"explorer.autoReveal": false,
+
+		// Keep this much history in terminals.
+		"terminal.integrated.scrollback": 10000,
+
+		// Allow explorer to horizontal scroll
+		"workbench.list.horizontalScrolling": true,
+
+		// IntelliSense
+		"C_Cpp.default.compilerPath": "/opt/toolchains/zephyr-sdk-0.16.1/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc",
+	},
+	"tasks": {
+		"version": "2.0.0",
+		// Global tasks
+		"tasks": [
+			/* Task to debug vscode variables. */
+			{
+				"label": "echo",
+				"type": "shell",
+				"command": "echo",
+				"args": ["${workspaceFolder}"]
+			},
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"dan-c-underwood.arm",
+			"ms-vscode.cpptools",
+			"ms-vscode.cpptools-extension-pack",
+			"ms-vscode.cpptools-themes",
+			"ms-vscode.vscode-embedded-tools",
+			"marus25.cortex-debug",
+			"editorconfig.editorconfig",
+			"mhutchie.git-graph",
+			"trond-snekvik.gnu-mapfiles",
+			"zixuanwang.linkerscript",
+			"ms-vscode.makefile-tools",
+			"mcu-debug.rtos-views",
+			"shyykoserhiy.git-autoconfig"
+		]
+	}
+}
