@@ -6,21 +6,13 @@
 	"name": "terpsichore",
 	"image": "ghcr.io/zephyrproject-rtos/zephyr-build:v0.27.4",
 	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi gdb-multiarch",
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
-
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-//	"remoteUser": "vscode",
-//	"remoteUser": "user",
-//	"mounts": [
-//		"source=splett,target=${containerWorkspaceFolder},type=volume"
-//	]
-	// The image above has ZEPHYR_BASE hard coded to /workdir/zephyr. However
-	// `west` will install zephyr in /workspaces when we configure the container
-	// so we override the environment setting here.
+	"customizations": {
+			"vscode": {
+				"extensions": [
+					"ms-cortex.debug"
+				]
+			}
+		},
 	"remoteEnv": {
 		"ZEPHYR_BASE": "/workspaces/zephyr"
 	}
