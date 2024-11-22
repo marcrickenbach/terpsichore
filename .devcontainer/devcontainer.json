@@ -9,7 +9,8 @@
 	"customizations": {
 			"vscode": {
 				"extensions": [
-					"marus25.cortex-debug"
+					"marus25.cortex-debug",
+					"mcu-debug.debug-tracker-vscode"
 				]
 			}
 		},
