@@ -9,7 +9,7 @@
 	"customizations": {
 			"vscode": {
 				"extensions": [
-					"ms-cortex.debug"
+					"marus25.cortex-debug"
 				]
 			}
 		},
