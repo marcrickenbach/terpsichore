@@ -49,6 +49,7 @@ Open a VSCode terminal. You should be at /workspaces/terpsichore,
 which is inside the cloned repository. From here, run the following 
 commands: 
 ```
+$ sudo chown -R $(whoami):$(whoami) /workspaces
 $ west init -l
 $ west update
 ```
