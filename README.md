@@ -53,6 +53,9 @@ $ sudo chown -R $(whoami):$(whoami) /workspaces
 $ west init -l
 $ west update
 ```
+The first command changes permissions to the user so that we can 
+run the west init command in the workspaces directory. 
+
 The -l flag will create a new west workspace using the local west.yml
 file at the root of the project directory. This west manifest file
 tells the build system what modules we need to build. The west update
